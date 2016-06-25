@@ -10,3 +10,10 @@ val f = new foo
 f.test
 
 Set("tweet")
+
+object AddOne {
+  def apply(m: Int): Int = m + 1
+}
+
+val plusOne = AddOne(1)
+

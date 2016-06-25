@@ -190,5 +190,7 @@
         </SOURCES>
       </library>
     </orderEntry>
+    <orderEntry type="library" name="SBT: org.twitter4j:twitter4j-core:4.0.4:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.twitter4j:twitter4j-stream:4.0.4:jar" level="project" />
   </component>
 </module>
