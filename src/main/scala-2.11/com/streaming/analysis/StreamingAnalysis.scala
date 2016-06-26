@@ -28,20 +28,16 @@ class StreamingAnalysis {
   def start = {
     val tweetsStreaming = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder] (sc, kafkaParams, topic)
     val rawTweets = tweetsStreaming.map(_._2)
-    rawTweets.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/tweetResults/tweet")
+    rawTweets.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/rawResults/tweet")
 
-    val text = rawTweets.map(TwitterObjectFactory.createStatus).map(SerializeTweet(_))
-//    text.print()
-    text.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/tweetText/text")
+    val countryText = rawTweets.map(TwitterObjectFactory.createStatus).map(CustomizeTweet(_))
+    countryText.print()
+    countryText.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/countryText/ct")
 
     // Start the streaming computation
     println("Spark Streaming begin...")
     sc.start()
     sc.awaitTermination()
   }
-}
-
-object SerializeTweet extends  Serializable {
-  def apply(status: twitter4j.Status) = status.getText
 }
 
