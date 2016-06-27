@@ -54,3 +54,6 @@ def createB = "B"
 val tupleValue = getTuple()
 
 tupleValue._1
+
+/*----------------- filter tuple ---------*/
+val nums = ("?" , "haha")
