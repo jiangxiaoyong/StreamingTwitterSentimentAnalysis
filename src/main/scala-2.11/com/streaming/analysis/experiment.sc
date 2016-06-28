@@ -57,3 +57,15 @@ tupleValue._1
 
 /*----------------- filter tuple ---------*/
 val nums = ("?" , "haha")
+
+/*------------- filter only words --------*/
+ val string = "aaa bbb ??? dddd eeee"
+string.split(" ").filter(_.matches("^[a-zA-Z0-9 ]+$"))
+
+/*---------- different reduce -------*/
+val seq = Seq(1,2,3,4)
+seq.reduce(_-_)
+seq.reduceLeft(_-_)
+seq.reduceRight(_-_)
+
+seq.fold(1)(_-_)

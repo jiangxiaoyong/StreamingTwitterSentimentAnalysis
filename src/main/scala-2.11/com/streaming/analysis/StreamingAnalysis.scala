@@ -31,11 +31,16 @@ class StreamingAnalysis {
     rawTweets.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/rawResults/tweet")
 
     val rawLocationText= rawTweets.map(TwitterObjectFactory.createStatus).map(CustomizeTweet(_))
-    rawLocationText.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/countryText/ct")
+    rawLocationText.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/rawLocationText/ct")
 
     //filtering tuple, sanitise location
-    val cityText = rawLocationText.filter(x => FilterUtils.sanitiseLocation(x._1)).map{ case (k,v) => (k.split(",")(0), v)}
-    cityText.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/cleanCityText/ct")
+    val cityText = rawLocationText.filter(x => FilterUtils.sanitiseLocation(x._1)).map{ case (k,v) => (k.split(",")(0), v)} //location from tweet, "city, country"
+    cityText.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/cityText/ct")
+
+    //filtering tuple, sanitise text
+    val cleanCityText =  cityText.map{ case (k, v) => (k, FilterUtils.filterOnlyWords(v))}.filter(x => FilterUtils.filterEmptyString(x._2))
+    cleanCityText.print()
+    cleanCityText.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/cleanCityText/ct")
 
     // Start the streaming computation
     println("Spark Streaming begin...")
