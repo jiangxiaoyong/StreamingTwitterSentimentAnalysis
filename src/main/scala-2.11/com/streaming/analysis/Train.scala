@@ -54,8 +54,16 @@ object Train {
     predictionAndLabel.take(10).foreach( x => {
       println("---------------------------------------------------------------")
       println("Text = " + x._3)
-      println("Actual Label = " + (if (x._1 == 1) "positive" else "negative"))
-      println("Predicted Label = " + (if (x._2 == 1) "positive" else "negative"))
+      println("Actual Label = " + ( x._1  match {
+        case 0 => "negative"
+        case 2 => "neutral"
+        case 4 => "positive"
+      }))
+      println("Predicted Label = " + (x._2 match {
+        case 0 => "negative"
+        case 2 => "neutral"
+        case 4 => "positive"
+      }))
       println("----------------------------------------------------------------\n\n")
     } )
 
