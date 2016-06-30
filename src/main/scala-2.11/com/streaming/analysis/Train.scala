@@ -20,11 +20,45 @@ object Train {
     val trainingDataSet = rawTrainingDataSet.map(lines => TrainingUtils.toTuple(lines))
                                             .map(x => (x._1, TrainingUtils.featureVectorization(x._2)))
                                             .map(x => new LabeledPoint((x._1).toDouble, x._2))
-    trainingDataSet.foreach(print)
+//    trainingDataSet.foreach(print)
+
+    //loading testing data set
+    println("Loading testing data set ...")
+    val rawTestingDataSet = sc.textFile("src/main/resources/testing.dataset.csv")
+    val testingDataSet = rawTestingDataSet.map(lines => TrainingUtils.toTuple(lines))
+                                          .map(x => (x._1, TrainingUtils.featureVectorization(x._2), x._2))
+                                          .map(x =>{
+                                            val lp = new LabeledPoint((x._1).toDouble, x._2)
+                                            (lp, x._3) //_3 is plain text data
+                                          })
 
     //Begin training model
     println("******** Training *********")
     val model =NaiveBayes.train(trainingDataSet, lambda = 1.0, modelType = "multinomial")
     println("******** Finish Training *******")
+
+    //prediction value vs testing actual label
+    val predictionAndLabel = testingDataSet.map(p => {
+      val labeledPoint = p._1
+      val text = p._2
+      val features = labeledPoint.features
+      val actualLabel = labeledPoint.label
+      val predictedLabel = model.predict(features)
+      (actualLabel, predictedLabel, text)
+    })
+
+    val accuracy = 1.0 * predictionAndLabel.filter(x => x._1 == x._2).count() / testingDataSet.count()
+
+    println("Training and Testing complete. Accuracy is = " + accuracy)
+
+    predictionAndLabel.take(10).foreach( x => {
+      println("---------------------------------------------------------------")
+      println("Text = " + x._3)
+      println("Actual Label = " + (if (x._1 == 1) "positive" else "negative"))
+      println("Predicted Label = " + (if (x._2 == 1) "positive" else "negative"))
+      println("----------------------------------------------------------------\n\n")
+    } )
+
+
   }
 }
