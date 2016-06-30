@@ -15,3 +15,7 @@ libraryDependencies ++=  Seq(
   "org.twitter4j" % "twitter4j-stream" % "4.0.4"
 )
 
+//specify the main method that should be invoked when your project is running
+mainClass in (Compile, run) := Some("com.streaming.analysis.Train")
+
+
