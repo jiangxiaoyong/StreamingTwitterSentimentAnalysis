@@ -28,7 +28,7 @@ object Train {
                                             .map(x => (x._1, TrainingUtils.filterStopWords(x._2, stopWords)))
                                             .map(x => (x._1, TrainingUtils.featureVectorization(x._2)))
                                             .map(x => new LabeledPoint((x._1).toDouble, x._2))
-    trainingDataSet.foreach(print)
+//    trainingDataSet.foreach(print)
 
     //loading testing data set
     println("Loading testing data set ...")
@@ -75,6 +75,13 @@ object Train {
       }))
       println("----------------------------------------------------------------\n\n")
     } )
+
+    //saving model
+    println("************** Saving Model **************")
+    model.save(sc, "src/main/model/")
+
+    sc.stop()
+    print("******** Spark Model Training Done **********")
 
 
   }
