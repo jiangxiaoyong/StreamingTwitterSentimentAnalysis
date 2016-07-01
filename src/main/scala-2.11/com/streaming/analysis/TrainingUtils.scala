@@ -19,6 +19,10 @@ object TrainingUtils {
   }
 
   def featureVectorization(sentenceData: String): Vector = {
-    hashingTF.transform(sentenceData.toSeq)
+    hashingTF.transform(sentenceData.sliding(3).toSeq) //create feature vector by convert tweet text string into bigrams(n-gram model), this can increase predicting accuracy
+  }
+
+  def filterStopWords(s: String, stopWords: Set[String]) = {
+    s.toLowerCase().split("\\W+").filter(!stopWords.contains(_)).mkString(" ")
   }
 }

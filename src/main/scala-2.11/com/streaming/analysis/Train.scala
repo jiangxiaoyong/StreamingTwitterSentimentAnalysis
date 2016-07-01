@@ -3,6 +3,7 @@ package com.streaming.analysis
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.classification.{NaiveBayes}
+import java.io.InputStream
 
 
 /**
@@ -14,18 +15,26 @@ object Train {
     val sparkConf = new SparkConf().setAppName("Train Naive Bayes model").setMaster("local[*]")
     val sc = new SparkContext(sparkConf)
 
+    //load stop words
+    val stream: InputStream = getClass.getResourceAsStream("/stopwords.txt")
+    val lines = scala.io.Source.fromInputStream(stream).getLines.toSet
+    val stopWords = sc.broadcast(lines).value
+
+
     //load training data set
     println("Loading training data set ...")
     val rawTrainingDataSet = sc.textFile("src/main/resources/training.dataset.csv")
     val trainingDataSet = rawTrainingDataSet.map(lines => TrainingUtils.toTuple(lines))
+                                            .map(x => (x._1, TrainingUtils.filterStopWords(x._2, stopWords)))
                                             .map(x => (x._1, TrainingUtils.featureVectorization(x._2)))
                                             .map(x => new LabeledPoint((x._1).toDouble, x._2))
-//    trainingDataSet.foreach(print)
+    trainingDataSet.foreach(print)
 
     //loading testing data set
     println("Loading testing data set ...")
     val rawTestingDataSet = sc.textFile("src/main/resources/testing.dataset.csv")
     val testingDataSet = rawTestingDataSet.map(lines => TrainingUtils.toTuple(lines))
+//                                          .map(x => (x._1, TrainingUtils.filterStopWords(x._2, stopWords)))
                                           .map(x => (x._1, TrainingUtils.featureVectorization(x._2), x._2))
                                           .map(x =>{
                                             val lp = new LabeledPoint((x._1).toDouble, x._2)
