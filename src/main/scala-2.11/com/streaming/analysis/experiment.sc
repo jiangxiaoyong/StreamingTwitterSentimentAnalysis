@@ -4,7 +4,6 @@ import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.ml.feature.{HashingTF, IDF, Tokenizer}
 
-
 /*---------- assigning a field to block ---*/
 class foo {
   lazy val test =  {
@@ -90,4 +89,23 @@ seq.reduceRight(_-_)
 
 seq.fold(1)(_-_)
 LabeledPoint
+
+/*------------ list of tuple -----------------*/
+val list1 = List(("c1","m1"),  ("c2", "m2"))
+("c1","c2") :: list1
+
+val list2 = List(("c3", "m3"))
+
+list1:::list2
+
+val tup = Option(List("1", "2"))
+tup.getOrElse(("0","0"))
+
+val seq1 = Seq((1,2),(3,4))
+seq1.map(x=> x._1 + 1)
+
+2.8 toString
+
+
+
 

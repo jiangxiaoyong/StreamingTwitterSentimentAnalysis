@@ -8,6 +8,7 @@ import org.apache.spark.streaming._
 import _root_.kafka.serializer.StringDecoder
 import org.apache.spark.streaming.kafka._
 import org.apache.spark.SparkConf
+import org.apache.spark.mllib.classification.NaiveBayesModel
 import twitter4j.TwitterObjectFactory
 
 class StreamingAnalysis {
@@ -43,8 +44,22 @@ class StreamingAnalysis {
 //    cleanCityText.print()
     cleanCityText.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/cleanCityText/ct")
 
+    //loading Naive Bayes model
+    println("Loading the Naive Bayes model...")
+    val model = NaiveBayesModel.load(sc.sparkContext, "src/main/model/")
+
+    println("Start predicting...")
+    //data structure:  (city, (msg, predicted value))
+    val cityTextPredictedValue= cleanCityText.map( x => (x._1, (x._2, model.predict(TrainingUtils.featureVectorization(x._2)))))
+//    cityTextPredictedValue.print()
+    cityTextPredictedValue.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/cityTextPredictedValue/ct") // save this data structure for debugging
+
+    //predicted value for each city
+    val cityPredictedValue = cleanCityText.map( x => (x._1, model.predict(TrainingUtils.featureVectorization(x._2)).toString))
+//    cityPredictedValue.print()
+
     //group messages to their cities, accumulated from beginning of the app
-    val allMessagesPerCity = cleanCityText.updateStateByKey(TweetUtils.groupMessages _ )
+    val allMessagesPerCity = cityPredictedValue.updateStateByKey(TweetUtils.groupMessages _)
     allMessagesPerCity.print()
     allMessagesPerCity.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/allMessagesPerCity/ct")
 
