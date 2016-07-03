@@ -104,8 +104,11 @@ tup.getOrElse(("0","0"))
 val seq1 = Seq((1,2),(3,4))
 seq1.map(x=> x._1 + 1)
 
-2.8 toString
+val d = "2.8" toDouble
 
-
+/*---------- filter positive value in tuple value -----*/
+val tuple = ("city", "4.0 1.0 4.0")
+tuple._2.split(" ").filter(x => x.toDouble > 1.0).length
+//tuple.map{case (k:String, v:String) => (k,v.split(" ").filter(x => x.toDouble > 1.0).mkString(" "))}
 
 

@@ -28,4 +28,7 @@ object TweetUtils {
     Some(prevValues.getOrElse("") + currValues)
   }
 
+  def accumulatePositivePredictedValue(currValues: Seq[Double], prevValues: Option[Double]) = {
+  }
+
 }

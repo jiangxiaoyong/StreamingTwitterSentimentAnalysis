@@ -7,15 +7,20 @@ import org.apache.spark.streaming.StreamingContext._
 import org.apache.spark.streaming._
 import _root_.kafka.serializer.StringDecoder
 import org.apache.spark.streaming.kafka._
-import org.apache.spark.SparkConf
 import org.apache.spark.mllib.classification.NaiveBayesModel
 import twitter4j.TwitterObjectFactory
+import org.apache.spark.{SparkConf, SparkContext}
 
 class StreamingAnalysis {
   println("Initializing Streaming Spark Context...")
   val sparkConf = new SparkConf().setAppName("Twitter sentiment analysis").setMaster("local[*]")
   val sc = new StreamingContext(sparkConf, Seconds(5))
   sc.checkpoint("/SparkCheckPoint") //needed for stateful transformation
+
+  //load stop words
+//  println("loading stop words...")
+//  val stopWordsStream: InputStream = getClass.getResourceAsStream("/stopwords.txt")
+//  val stopWords = scala.io.Source.fromInputStream(stopWordsStream).getLines.toSet
 
   println("Initializing streaming parameters...")
   val props = new Properties()
@@ -50,18 +55,31 @@ class StreamingAnalysis {
 
     println("Start predicting...")
     //data structure:  (city, (msg, predicted value))
-    val cityTextPredictedValue= cleanCityText.map( x => (x._1, (x._2, model.predict(TrainingUtils.featureVectorization(x._2)))))
+    val cityTextPredictedValue= cleanCityText.map(x => (x._1, (x._2, model.predict(TrainingUtils.featureVectorization(x._2)))))
 //    cityTextPredictedValue.print()
-    cityTextPredictedValue.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/cityTextPredictedValue/ct") // save this data structure for debugging
+    cityTextPredictedValue.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/cityTextPredictedValue/ct") // save this data structure for reference and debugging
 
     //predicted value for each city
-    val cityPredictedValue = cleanCityText.map( x => (x._1, model.predict(TrainingUtils.featureVectorization(x._2)).toString))
+    val cityPredictedValue = cleanCityText.map(x => (x._1, model.predict(TrainingUtils.featureVectorization(x._2)).toString))
 //    cityPredictedValue.print()
+
+    //group predicted values for each city
+    val reducedCityPredictedValue = cityPredictedValue.reduceByKey((x, y) => x + " " + y)
+    reducedCityPredictedValue.print()
+    reducedCityPredictedValue.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/reducedCityPredictedValue/ct")
+
+    //classify positive predicted value and counting them
+    val numPositivePredictedValue = reducedCityPredictedValue.map(x => (x._1, x._2.split(" ").filter( x => x.toDouble > 1.0).mkString(" ")))
+                                                          .map(x => (x._1, x._2.split(" ").length)) //counting the number of positive predicted value
+    numPositivePredictedValue.print()
+    numPositivePredictedValue.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/numPositivePredictedValue/ct")
 
     //group messages to their cities, accumulated from beginning of the app
     val allMessagesPerCity = cityPredictedValue.updateStateByKey(TweetUtils.groupMessages _)
-    allMessagesPerCity.print()
+//    allMessagesPerCity.print()
     allMessagesPerCity.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/allMessagesPerCity/ct")
+
+    //count positive and negative predicted vale for each city
 
     // Start the streaming computation
     println("Spark Streaming begin...")
