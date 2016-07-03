@@ -28,7 +28,8 @@ object TweetUtils {
     Some(prevValues.getOrElse("") + currValues)
   }
 
-  def accumulatePositivePredictedValue(currValues: Seq[Double], prevValues: Option[Double]) = {
+  def accumulateSentimentCount(currValues: Seq[Int], prevValues: Option[Int]) = {
+    Some(prevValues.getOrElse(0) + currValues.sum)
   }
 
 }

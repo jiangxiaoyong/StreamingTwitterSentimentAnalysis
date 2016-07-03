@@ -111,4 +111,6 @@ val tuple = ("city", "4.0 1.0 4.0")
 tuple._2.split(" ").filter(x => x.toDouble > 1.0).length
 //tuple.map{case (k:String, v:String) => (k,v.split(" ").filter(x => x.toDouble > 1.0).mkString(" "))}
 
+"".isEmpty
+
 
