@@ -53,40 +53,57 @@ class StreamingAnalysis {
     val model = NaiveBayesModel.load(sc.sparkContext, "src/main/model/")
 
     println("Start predicting...")
-    //data format:  (city, (msg, predicted value))
+    /**
+      * analyze sentiment of each tweet
+      * data format:  (city, (msg, predicted value))
+     */
     val cityTextPredictedValue= cleanCityText.map(x => (x._1, (x._2, model.predict(TrainingUtils.featureVectorization(x._2)))))
     cityTextPredictedValue.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/cityTextPredictedValue/ct") // save this data structure for reference and debugging
 
-    //predicted value for each city
-    //data format: (city, 4.0) or (city, 1.0)
+    /**
+      * predicted sentiment value for each city
+      * data format: (city, 4.0) or (city, 1.0)
+      */
     val cityPredictedValue = cleanCityText.map(x => (x._1, model.predict(TrainingUtils.featureVectorization(x._2)).toString))
 
-    //group predicted values for each city
-    //data format: (city, 4.0 1.0 4.0)
+    /**
+      * group predicted sentiment values for each city
+      * data format: (city, 4.0 1.0 4.0)
+      */
     val reducedCityPredictedValue = cityPredictedValue.reduceByKey((x, y) => x + " " + y)
     reducedCityPredictedValue.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/reducedCityPredictedValue/ct")
 
-    //classify positive predicted value and counting them
-    //data format: (city, num of positive value) e.g. (city, 2) ...
+    /**
+      * classify positive sentiment value and count them
+      * data format: (city, num of positive value) e.g. (city, 2) ...
+      */
     val numPositivePredictedValue = reducedCityPredictedValue.map(x => (x._1, x._2.split(" ").filter( x => x.toDouble == 4.0).mkString(" "))) // filtering negative value
                                                              .map{ case (k:String, v:String) => if(!v.isEmpty) (k, v.split(" ").length) else (k, 0)} //counting the number of positive predicted value
     numPositivePredictedValue.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/numPositivePredictedValue/ct")
 
-    //accumulate counting for positive sentiment tweet to their cities, accumulate from beginning of the app
+    //accumulate counting of positive sentiment tweet per city, accumulate from beginning of the app
     val totalPositiveTweetPerCity = numPositivePredictedValue.updateStateByKey(TweetUtils.accumulateSentimentCount _ )
     totalPositiveTweetPerCity.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/totalPositiveTweetPerCity/ct")
 
-    //classify negative predicted value and counting them
-    //data format: (city, num of negative value) e.g. (city, 2) ...
+    /**
+      * classify negative sentiment value and count them
+      * data format: (city, num of negative value) e.g. (city, 2) ...
+      */
     val numNegativePredictedValue = reducedCityPredictedValue.map(x => (x._1, x._2.split(" ").filter( x => x.toDouble == 0.0).mkString(" "))) //filtering positive value
                                                              .map{ case (k:String, v:String) => if(!v.isEmpty) (k, v.split(" ").length) else (k, 0)} //counting the number of positive predicted value
     numNegativePredictedValue.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/numNegativePredictedValue/ct")
 
-    //accumulate counting for positive sentiment tweet to their cities, accumulate from beginning of the app
+    //accumulate counting of positive sentiment tweet per city, accumulate from beginning of the app
     val totalNegativeTweetPerCity = numNegativePredictedValue.updateStateByKey(TweetUtils.accumulateSentimentCount _ )
     totalNegativeTweetPerCity.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/totalNegativeTweetPerCity/ct")
 
-    //count positive and negative predicted vale for each city
+    /**
+      * join positive and negative count of sentiment value for each city
+      * data format: (city, (count of positive, count of negative))
+      */
+    val joinPositiveNegativeCountPerCity = totalPositiveTweetPerCity.join(totalNegativeTweetPerCity)
+    joinPositiveNegativeCountPerCity.print()
+    joinPositiveNegativeCountPerCity.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/joinPositiveNegativeCountPerCity/ct")
 
     // Start the streaming computation
     println("Spark Streaming begin...")
