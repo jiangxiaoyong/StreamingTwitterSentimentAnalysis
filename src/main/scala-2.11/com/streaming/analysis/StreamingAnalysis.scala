@@ -6,12 +6,16 @@ import java.util.Properties
 import org.apache.spark.streaming.StreamingContext._
 import org.apache.spark.streaming._
 import _root_.kafka.serializer.StringDecoder
+import _root_.kafka.producer.KeyedMessage
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.spark.streaming.kafka._
 import org.apache.spark.mllib.classification.NaiveBayesModel
 import twitter4j.TwitterObjectFactory
 import org.apache.spark.{SparkConf, SparkContext}
 
 class StreamingAnalysis {
+  this: KafkaProducer =>
+
   println("Initializing Streaming Spark Context...")
   val sparkConf = new SparkConf().setAppName("Twitter sentiment analysis").setMaster("local[*]")
   val sc = new StreamingContext(sparkConf, Seconds(5))
@@ -104,6 +108,18 @@ class StreamingAnalysis {
     val joinPositiveNegativeCountPerCity = totalPositiveTweetPerCity.join(totalNegativeTweetPerCity)
     joinPositiveNegativeCountPerCity.print()
     joinPositiveNegativeCountPerCity.window(Seconds(5), Seconds(5)).saveAsTextFiles(s"/joinPositiveNegativeCountPerCity/ct")
+
+    /**
+      * publish sentiment count of each city back to Kafka with different kafka topic
+      */
+      joinPositiveNegativeCountPerCity.foreachRDD{
+        rdd => rdd.foreach {
+          message => {
+            val msg = new KeyedMessage[String, String](KafkaConfig.KAFKA_SENTIMENT_TOPIC, message.toString)
+            producer.send(msg)
+          }
+        }
+      }
 
     // Start the streaming computation
     println("Spark Streaming begin...")
