@@ -7,7 +7,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
   */
 object StreamingAnalysisApp {
   def main(args: Array[String]): Unit = {
-    val streamingApp = new StreamingAnalysis with KafkaProducer
+    val streamingApp = new StreamingAnalysis
     streamingApp.start
   }
 

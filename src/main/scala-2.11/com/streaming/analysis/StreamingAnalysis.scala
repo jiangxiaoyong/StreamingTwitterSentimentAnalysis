@@ -7,14 +7,14 @@ import org.apache.spark.streaming.StreamingContext._
 import org.apache.spark.streaming._
 import _root_.kafka.serializer.StringDecoder
 import _root_.kafka.producer.KeyedMessage
-import org.apache.kafka.clients.producer.KafkaProducer
+import _root_.kafka.producer.{Producer, ProducerConfig}
 import org.apache.spark.streaming.kafka._
 import org.apache.spark.mllib.classification.NaiveBayesModel
 import twitter4j.TwitterObjectFactory
 import org.apache.spark.{SparkConf, SparkContext}
 
+
 class StreamingAnalysis {
-  this: KafkaProducer =>
 
   println("Initializing Streaming Spark Context...")
   val sparkConf = new SparkConf().setAppName("Twitter sentiment analysis").setMaster("local[*]")
@@ -113,12 +113,16 @@ class StreamingAnalysis {
       * publish sentiment count of each city back to Kafka with different kafka topic
       */
       joinPositiveNegativeCountPerCity.foreachRDD{
-        rdd => rdd.foreach {
-          message => {
-            val msg = new KeyedMessage[String, String](KafkaConfig.KAFKA_SENTIMENT_TOPIC, message.toString)
-            producer.send(msg)
+        rdd => rdd.foreachPartition {
+          partitionOfRecords => {
+            val producer  = new Producer[String, String](new ProducerConfig(KafkaConfig.kafkaProps))
+            partitionOfRecords.foreach {
+              message => producer.send(new KeyedMessage[String, String](KafkaConfig.KAFKA_SENTIMENT_TOPIC, message.toString()))
+            }
+            producer.close()
           }
         }
+
       }
 
     // Start the streaming computation
