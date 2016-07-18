@@ -1,21 +1,33 @@
 Docker instructions
 =====================================
-Consumer Docker
+Kafka Consumer Docker
 -------------------------------------
 ```
 docker run -it --name consumer --expose 8888 --expose 4040 -p 8888:8888 -p 4040:4040 -v ~/IdeaProjects/StreamingTwitterSentimentAnalysis/:/app -d jiangxiaoyong/consumer
 ```
+- 4040 is spark UI
+- 8888 is debugging port
 
-Running instructions
+Streaming Twitter Sentiment Analysis project complete running instructions
 =====================================
-start set of dockers
+The complete project comprise four different parts of modules as below
+- [Twitter producer](https://github.com/jiangxiaoyong/TwitterProducer)
+- Kafka cluster
+⋅⋅* Apache zookeeper
+⋅⋅* Apache Kafka
+- Kafka consumer
+⋅⋅* Spark Streaming
+⋅⋅* Naive Bayes Model
+- [Scala-play server](https://github.com/jiangxiaoyong/play-scala)
+
+Running procedural and instructions
 ------------------------------------
+- start set of dockers
 ```
-docker start zookeeper kafka producer consumer
+docker start zookeeper kafka producer consumer playScala
 ```
 
-run producer inside producer docker
-------------------------------------
+- run producer inside of producer container
 ```
 docker exec -it producer /bin/bash
 cd /app
@@ -23,8 +35,7 @@ sbt
 >run
 ```
 
-run consumer inside consumer docker
-------------------------------------
+- run consumer inside of consumer container
 ```
 docker exec -it consumer /bin/bash
 cd /app
@@ -32,8 +43,18 @@ sbt
 >run
 ```
 
+- run scala-play server inside of playScala container
+```
+docker exec -it playScala /bin/bash
+cd /app
+activator run
+```
+
+- connect and send message to play server via WebSocket at index home page of web client
+⋅⋅* see detail instructions at [Scala-play repo](https://github.com/jiangxiaoyong/play-scala)
+
 Training Naive Bayes Model
-=====================================
+------------------------------------
 - modify sbt file to specify which main file as the entry point
 - training data set from Sentiment140, total training data volume 1,600,000
 - run consumer inside consumer docker
