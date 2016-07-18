@@ -11,14 +11,14 @@ docker run -it --name consumer --expose 8888 --expose 4040 -p 8888:8888 -p 4040:
 Streaming Twitter Sentiment Analysis project complete running instructions
 =====================================
 The complete project comprise four different parts of modules as below
-1. [Twitter producer](https://github.com/jiangxiaoyong/TwitterProducer)
-2. Kafka cluster
-⋅⋅* Apache zookeeper
-⋅⋅* Apache Kafka
-3. Kafka consumer
-⋅⋅* Spark Streaming
-⋅⋅* Naive Bayes Model
-4. [Scala-play server](https://github.com/jiangxiaoyong/play-scala)
+- [Twitter producer](https://github.com/jiangxiaoyong/TwitterProducer)
+- Kafka cluster
+⋅⋅1. Apache zookeeper
+⋅⋅2. Apache Kafka
+- Kafka consumer
+⋅⋅1. Spark Streaming
+⋅⋅2. Naive Bayes Model
+- [Scala-play server](https://github.com/jiangxiaoyong/play-scala)
 
 Running procedural and instructions
 ------------------------------------
