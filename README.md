@@ -13,11 +13,11 @@ Streaming Twitter Sentiment Analysis project complete running instructions
 The complete project comprise four different parts of modules as below
 - [Twitter producer](https://github.com/jiangxiaoyong/TwitterProducer)
 - Kafka cluster
-⋅⋅1. Apache zookeeper
-⋅⋅2. Apache Kafka
+  - Apache zookeeper
+  - Apache Kafka
 - Kafka consumer
-⋅⋅1. Spark Streaming
-⋅⋅2. Naive Bayes Model
+  - Spark Streaming
+  - Naive Bayes Model
 - [Scala-play server](https://github.com/jiangxiaoyong/play-scala)
 
 Running procedural and instructions
@@ -51,7 +51,7 @@ activator run
 ```
 
 - connect and send message to play server via WebSocket at index home page of web client
-⋅⋅* see detail instructions at [Scala-play repo](https://github.com/jiangxiaoyong/play-scala)
+  - see detail instructions at [Scala-play repo](https://github.com/jiangxiaoyong/play-scala)
 
 Training Naive Bayes Model
 ------------------------------------
