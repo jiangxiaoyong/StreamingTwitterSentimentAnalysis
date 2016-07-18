@@ -24,30 +24,35 @@ Running procedural and instructions
 ------------------------------------
 - start set of dockers
 ```
-docker start zookeeper kafka producer consumer playScala
+$ docker start zookeeper kafka producer consumer playScala
 ```
+- run zookeeper and kafka servers inside docker
+```
+$ docker exec zookeeper /zookeeper-3.4.8/bin/zkServer.sh start
+$ docker exec -it kafka /kafka_2.11-0.10.0.0/bin/kafka-server-start.sh /kafka_2.11-0.10.0.0/config/server.properties -d --override zookeeper.connect=${ZOOKEEPER_PORT_2181_TCP_ADDR}:${ZOOKEEPER_PORT_2181_TCP_PORT}
 
+```
 - run producer inside of producer container
 ```
-docker exec -it producer /bin/bash
-cd /app
-sbt
+$ docker exec -it producer /bin/bash
+$ cd /app
+$ sbt
 >run
 ```
 
 - run consumer inside of consumer container
 ```
-docker exec -it consumer /bin/bash
-cd /app
-sbt
+$ docker exec -it consumer /bin/bash
+$ cd /app
+$ sbt
 >run
 ```
 
 - run scala-play server inside of playScala container
 ```
-docker exec -it playScala /bin/bash
-cd /app
-activator run
+$ docker exec -it playScala /bin/bash
+$ cd /app
+$ activator run
 ```
 
 - connect and send message to play server via WebSocket at index home page of web client
