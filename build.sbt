@@ -18,4 +18,6 @@ libraryDependencies ++=  Seq(
 //specify the main method that should be invoked when your project is running
 mainClass in (Compile, run) := Some("com.streaming.analysis.StreamingAnalysisApp")
 
+//uncomment this line for training and evaluating machine learning algorithm
+//mainClass in (Compile, run) := Some("com.streaming.analysis.Train")
 
