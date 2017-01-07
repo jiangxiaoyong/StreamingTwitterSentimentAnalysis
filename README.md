@@ -1,5 +1,11 @@
 Docker instructions
 =====================================
+Overview
+-------------------------------------
+A big data project combined with Machine leaning algorithm running on Apache Spark
+
+Here is [my post](https://jiangxiaoyong.github.io/portfolio/sentimentAnalysis/) explaining detail of this project
+
 Kafka Consumer Docker
 -------------------------------------
 ```
